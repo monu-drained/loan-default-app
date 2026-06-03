@@ -282,11 +282,11 @@ else:
         )
     with col_right:
         st.markdown("<br>", unsafe_allow_html=True)
-        run_btn = st.button("▶ Run Analysis", use_container_width=True)
+        run_btn = st.button("▶ Run Analysis")
 
     with st.expander("🔍 Dataset Preview", expanded=False):
         st.markdown(f"**Shape:** {df_raw.shape[0]:,} rows × {df_raw.shape[1]} columns")
-        st.dataframe(df_raw.head(10), use_container_width=True)
+        st.dataframe(df_raw.head(10), width="stretch")
         c1, c2, c3 = st.columns(3)
         c1.metric("Rows", f"{df_raw.shape[0]:,}")
         c2.metric("Columns", df_raw.shape[1])
@@ -379,7 +379,7 @@ else:
                     "Recall (macro)": f"{rep['macro avg']['recall']:.4f}",
                     "F1 (macro)": f"{rep['macro avg']['f1-score']:.4f}",
                 })
-            st.dataframe(pd.DataFrame(rows).set_index("Model"), use_container_width=True)
+            st.dataframe(pd.DataFrame(rows).set_index("Model"), width="stretch")
             st.markdown("<br>", unsafe_allow_html=True)
             cols = st.columns(len(models_selected))
             for col, (name, r) in zip(cols, results.items()):
@@ -402,13 +402,13 @@ else:
                 with c1:
                     st.markdown("**Classification Report**")
                     st.dataframe(pd.DataFrame(r["report"]).transpose().round(3),
-                                 use_container_width=True)
+                                 width="stretch")
                 with c2:
                     st.markdown("**Confusion Matrix**")
                     cm_df = pd.DataFrame(r["cm"],
                         index=[f"Actual {c}" for c in target_classes],
                         columns=[f"Pred {c}" for c in target_classes])
-                    st.dataframe(cm_df, use_container_width=True)
+                    st.dataframe(cm_df, width="stretch")
                 st.divider()
 
         with tab3:
@@ -469,9 +469,19 @@ else:
         best_name = max(results, key=lambda n: results[n]["acc"])
         best_acc  = results[best_name]["acc"]
         best_html = (
-    "<div style='background:linear-gradient(135deg,#1a0a2e,#0a1628);"
-    "border:1px solid #7c3aed;border-radius:12px;padding:1.5rem;"
-    "margin-top:1.5rem;text-align:center;'>"
-    "<div style='font-family:Space Mono,monospace;font-size:0.7rem;color:#7c3aed;"
-    "letter-spacing:0.15em;text-transform:uppercase;'>🏆 Best Performing Mode</div>"
+            "<div style='background:linear-gradient(135deg,#1a0a2e,#0a1628);"
+            "border:1px solid #7c3aed;border-radius:12px;padding:1.5rem;"
+            "margin-top:1.5rem;text-align:center;'>"
+            "<div style='font-family:Space Mono,monospace;font-size:0.7rem;color:#7c3aed;"
+            "letter-spacing:0.15em;text-transform:uppercase;'>🏆 Best Performing Model</div>"
+            "<div style='font-family:Space Mono,monospace;font-size:1.8rem;color:#e2e8f0;"
+            "font-weight:700;margin:0.5rem 0;'>" + best_name + "</div>"
+            "<div style='color:#06b6d4;font-size:1.1rem;'>Accuracy: <b>"
+            + f"{best_acc:.2%}" + "</b></div></div>"
         )
+        st.markdown(best_html, unsafe_allow_html=True)
+
+st.markdown("""<div style="text-align:center;color:#2d2d3d;font-size:0.75rem;
+font-family:'Space Mono',monospace;margin-top:3rem;padding-top:1rem;
+border-top:1px solid #1e1e2e;">AutoPredict AI · Built with Streamlit</div>
+""", unsafe_allow_html=True)

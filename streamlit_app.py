@@ -369,7 +369,7 @@ else:
     # ── Data preview ─────────────────────────────────────────────────────────
     with st.expander("🔍 Dataset Preview", expanded=False):
         st.markdown(f"**Shape:** {df_raw.shape[0]:,} rows × {df_raw.shape[1]} columns")
-        st.dataframe(df_raw.head(10), use_container_width=True)
+        st.dataframe(df_raw.head(10), width="stretch")
 
         c1, c2, c3 = st.columns(3)
         c1.metric("Rows", f"{df_raw.shape[0]:,}")
@@ -478,7 +478,7 @@ else:
                     "F1 (macro)": f"{rep['macro avg']['f1-score']:.4f}",
                 })
             lb_df = pd.DataFrame(rows).set_index("Model")
-            st.dataframe(lb_df, use_container_width=True)
+            st.dataframe(lb_df, width="stretch")
 
             st.markdown("<br>", unsafe_allow_html=True)
             cols = st.columns(len(models_selected))
@@ -509,7 +509,7 @@ else:
                 with c1:
                     st.markdown("**Classification Report**")
                     rep_df = pd.DataFrame(r["report"]).transpose().round(3)
-                    st.dataframe(rep_df, use_container_width=True)
+                    st.dataframe(rep_df, width="stretch")
                 with c2:
                     st.markdown("**Confusion Matrix**")
                     cm_df = pd.DataFrame(
@@ -517,45 +517,82 @@ else:
                         index=[f"Actual {c}" for c in target_classes],
                         columns=[f"Pred {c}" for c in target_classes]
                     )
-                    st.dataframe(cm_df, use_container_width=True)
+                    st.dataframe(cm_df, width="stretch")
                 st.divider()
 
         # TAB 3 — Charts
-        with tab3:
-            if n_classes == 2:
-                st.markdown("### ROC Curves")
-                fig, ax = make_dark_fig()
-                colors = ["#7c3aed", "#06b6d4", "#f59e0b"]
-                for (name, r), color in zip(results.items(), colors):
-                    if r["fpr"] is not None:
-                        ax.plot(r["fpr"], r["tpr"], color=color, linewidth=2,
-                                label=f"{name} (AUC={r['auc']:.3f})")
-                ax.plot([0,1],[0,1], color="#2d2d3d", linestyle="--", linewidth=1)
-                ax.set_xlabel("False Positive Rate", color="#94a3b8")
-                ax.set_ylabel("True Positive Rate", color="#94a3b8")
-                ax.set_title("ROC Curve", color="#e2e8f0", fontsize=12)
-                ax.legend(facecolor="#12121a", edgecolor="#2d2d3d",
-                          labelcolor="#e2e8f0", fontsize=9)
-                st.pyplot(fig)
-                plt.close()
+with tab3:
 
-            st.markdown("### Accuracy Comparison")
-            fig2, ax2 = make_dark_fig()
-            names = list(results.keys())
-            accs  = [r["acc"] for r in results.values()]
-            bar_colors = ["#7c3aed", "#06b6d4", "#f59e0b"][:len(names)]
-            bars = ax2.bar(names, accs, color=bar_colors, width=0.5, edgecolor="none")
-            ax2.set_ylim(0, 1.1)
-            ax2.set_ylabel("Accuracy", color="#94a3b8")
-            ax2.set_title("Model Accuracy Comparison", color="#e2e8f0", fontsize=12)
-            for bar, acc in zip(bars, accs):
-                ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
-                         f"{acc:.3f}", ha="center", va="bottom",
-                         color="#e2e8f0", fontsize=10,
-                         fontfamily="monospace")
-            ax2.tick_params(axis="x", colors="#94a3b8")
-            st.pyplot(fig2)
-            plt.close()
+    # ROC Curve
+    if n_classes == 2:
+        st.markdown("### ROC Curves")
+
+        fig, ax = make_dark_fig()
+        colors = ["#7c3aed", "#06b6d4", "#f59e0b"]
+
+        for (name, r), color in zip(results.items(), colors):
+            if r["fpr"] is not None:
+                ax.plot(
+                    r["fpr"],
+                    r["tpr"],
+                    color=color,
+                    linewidth=2,
+                    label=f"{name} (AUC={r['auc']:.3f})"
+                )
+
+        ax.plot([0, 1], [0, 1],
+                color="#2d2d3d",
+                linestyle="--",
+                linewidth=1)
+
+        ax.set_xlabel("False Positive Rate", color="#94a3b8")
+        ax.set_ylabel("True Positive Rate", color="#94a3b8")
+        ax.set_title("ROC Curve", color="#e2e8f0", fontsize=12)
+
+        legend = ax.legend(
+            facecolor="#12121a",
+            edgecolor="#2d2d3d",
+            labelcolor="#e2e8f0"
+        )
+
+        st.pyplot(fig)
+        plt.close()
+
+    # Accuracy Comparison
+    st.markdown("### Accuracy Comparison")
+
+    names = list(results.keys())
+    accs = [results[n]["acc"] for n in names]
+
+    fig2, ax2 = make_dark_fig()
+    bars = ax2.bar(
+        names,
+        accs,
+        color=["#7c3aed", "#06b6d4", "#f59e0b"][:len(names)],
+        edgecolor="none",
+        alpha=0.9
+    )
+
+    ax2.set_ylim(0, 1)
+    ax2.set_ylabel("Accuracy", color="#94a3b8")
+    ax2.set_title("Model Accuracy", color="#e2e8f0", fontsize=12)
+
+    for bar, acc in zip(bars, accs):
+        ax2.text(
+            bar.get_x() + bar.get_width()/2,
+            bar.get_height() + 0.02,
+            f"{acc:.3f}",
+            ha="center",
+            va="bottom",
+            color="#e2e8f0",
+            fontsize=10,
+            fontfamily="monospace"
+        )
+
+    ax2.tick_params(axis="x", colors="#94a3b8")
+
+    st.pyplot(fig2)
+    plt.close()
 
         # TAB 4 — Feature Importance
         with tab4:

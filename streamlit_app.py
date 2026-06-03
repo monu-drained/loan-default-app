@@ -595,7 +595,7 @@ with tab3:
     plt.close()
 
         # TAB 4 — Feature Importance
-        with tab4:
+    with tab4:
             st.markdown("### Top Feature Importances")
             top_n = min(20, len(X.columns))
             for name, r in results.items():
@@ -628,6 +628,8 @@ with tab3:
                     plt.close()
                 else:
                     st.info(f"{name} does not support feature importance.")
+                    
+                    
 
         # ── Best model summary ────────────────────────────────────────────────
         best_name = max(results, key=lambda n: results[n]["acc"])
